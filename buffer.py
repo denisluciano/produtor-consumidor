@@ -32,35 +32,31 @@ for _ in range(0,2):
 inputs=[prod,cons]
 
 
-while vezes < 100:
+while True:
     # Parcialmente cheio
     if contador > 0 and contador < 10:
-        print("entrou aqui dentro")
         entrada,_,erro=select.select(inputs, [], inputs)
         con = entrada[random.randint(0,len(entrada)-1)]
         msg = con.recv(1024).decode()
 
-        print (lugares)
-        print (vezes)
 
-        if con is prod:
-            print("produtor em açao \n")
-            
+        print (lugares)
+
+        if con is prod:   
             if not msg: break
             lugares[(inn % 10)] = msg
             prod.send("ok".encode())
             inn += 1
             contador += 1
 
-
-        if con is cons:
-            print("consumidor em açao \n")
-            
+        if con is cons:          
             msgSend = lugares[out % 10]
             lugares[out % 10] = 0
             cons.send(msgSend.encode())
             out += 1
             contador -= 1
+            
+
             
             
     # Cheio ou vazio
@@ -71,8 +67,6 @@ while vezes < 100:
         
         if contador == 0: #buffer vazio
             if con is prod:
-                print("ta vazio \n")
-                
                 if not msg: break
                 lugares[(inn % 10)] = msg
                 prod.send("ok".encode())
@@ -82,8 +76,6 @@ while vezes < 100:
                 cons.send("buffer vazio".encode())
         else: #buffer cheio
             if con is cons:
-                print("ta cheio \n")
-                
                 msgSend = lugares[out % 10]
                 lugares[out % 10] = 0
                 cons.send(msgSend.encode())
@@ -92,9 +84,6 @@ while vezes < 100:
             else:
                 prod.send("buffer cheio".encode())
 
-    vezes += 1
 
-
-print ('Finalizando conexao do cliente')
-prod.close()
-cons.close()
+print ('Finalizando conexao')
+con.close()

@@ -13,11 +13,13 @@ print('Para sair use CTRL+C\n')
 
 tipo = "cons"
 tcp.send (tipo.encode())
+contador = 0
 
 while True:
-    print("ehntrou no loop")
+    
     time.sleep(random.uniform(0.5, 3.0))
     tcp.send("ok".encode())
     msg2 = tcp.recv(1024)
+    contador += 1
     print("tirou do buffer: ", msg2.decode())
 tcp.close()
