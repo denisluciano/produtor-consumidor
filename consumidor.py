@@ -5,8 +5,14 @@ PORT = 5000            # Porta que o Servidor esta
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 dest = (HOST, PORT)
 tcp.connect(dest)
-print('Para sair use CTRL+X\n')
-msg = "cons"
+
+print('Para sair use CTRL+C\n')
+
+
+tipo = "cons"
+tcp.send (tipo.encode())
+
 while True:
-    tcp.send(msg.encode())
+    tcp.send("ok".encode())
+    msg2 = tcp.recv(1024)
 tcp.close()

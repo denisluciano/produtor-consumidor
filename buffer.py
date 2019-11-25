@@ -2,10 +2,11 @@ import socket
 import random
 import select
 
-contador = 1
-inn = 1
-out = 1
+contador = 0
+inn = 0
+out = 0
 lugares = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+vezes = 0
 
 
 HOST = ''              # Endereco IP do Servidor
@@ -31,37 +32,62 @@ for _ in range(0,2):
 inputs=[prod,cons]
 
 
+while vezes < 100:
+    # Parcialmente cheio
+    if contador > 0 and contador < 10:
+        print("entrou aqui dentro")
+        entrada,_,erro=select.select(inputs, [], inputs)
+        con = entrada[random.randint(0,len(entrada)-1)]
+        msg = con.recv(1024)
 
-while True:
+        print (lugares)
 
-    while contador < 100:
-        # Parcialmente cheio
-        if contador > 0 and contador < 1000:
-            print("entrou aqui dentro")
-            entrada,_,erro=select.select(inputs, [], inputs)
-            con = entrada[random.randint(0,len(entrada)-1)]
-            msg = con.recv(1024)
-            print("passou select e con : ")
-            print(con)
+        if con is prod:
+            print("produtor em açao \n")
+            if not msg: break
+            lugares[inn] = msg
+            prod.send("ok".encode())
+            inn = (inn % 10)
+            inn += 1
+            contador += 1
 
+
+        if con is cons:
+            print("consumidor em açao \n")
+            msgSend = lugares[out % 10]
+            lugares[out % 10] = 0
+            cons.send(msgSend.encode())
+            out += 1
+            contador -= 1
+            
+            
+    # Cheio ou vazio
+    else:
+        entrada,_,erro=select.select(inputs, [], inputs)
+        con = entrada[random.randint(0,len(entrada)-1)]
+        msg = con.recv(1024)
+        
+        if contador == 0: #buffer vazio
             if con is prod:
-                print("produtor em açao", end = '')
+                print("ta vazio \n")
                 if not msg: break
-                print("mensagem produtor: ", msg, end = '')
-
+                lugares[inn] = msg
+                prod.send("ok".encode())
+                inn = (inn % 10)
+                inn += 1
+                contador += 1
+        else: #buffer cheio
             if con is cons:
-                print("consumidor em açao", end = '')
-                if not msg: break
-                print("mensagem consumidor: ", msg, end = '')
-        # Cheio ou vazio
-        else:
-            if contador == 0: #buffer vazio
-                print("ta vazio")
-            else: #buffer cheio
-                print("ta cheio")
+                print("ta cheio \n")
+                msgSend = lugares[out % 10]
+                lugares[out % 10] = 0
+                cons.send(msgSend.encode())
+                out += 1
+                contador -= 1
 
-        contador += 1
+    vezes += 1
 
 
-    print ('Finalizando conexao do cliente', cliente)
-    con.close()
+print ('Finalizando conexao do cliente')
+prod.close()
+cons.close()
