@@ -38,22 +38,24 @@ while vezes < 100:
         print("entrou aqui dentro")
         entrada,_,erro=select.select(inputs, [], inputs)
         con = entrada[random.randint(0,len(entrada)-1)]
-        msg = con.recv(1024)
+        msg = con.recv(1024).decode()
 
         print (lugares)
+        print (vezes)
 
         if con is prod:
             print("produtor em açao \n")
+            
             if not msg: break
-            lugares[inn] = msg
+            lugares[(inn % 10)] = msg
             prod.send("ok".encode())
-            inn = (inn % 10)
             inn += 1
             contador += 1
 
 
         if con is cons:
             print("consumidor em açao \n")
+            
             msgSend = lugares[out % 10]
             lugares[out % 10] = 0
             cons.send(msgSend.encode())
@@ -65,25 +67,30 @@ while vezes < 100:
     else:
         entrada,_,erro=select.select(inputs, [], inputs)
         con = entrada[random.randint(0,len(entrada)-1)]
-        msg = con.recv(1024)
+        msg = con.recv(1024).decode()
         
         if contador == 0: #buffer vazio
             if con is prod:
                 print("ta vazio \n")
+                
                 if not msg: break
-                lugares[inn] = msg
+                lugares[(inn % 10)] = msg
                 prod.send("ok".encode())
-                inn = (inn % 10)
                 inn += 1
                 contador += 1
+            else:
+                cons.send("buffer vazio".encode())
         else: #buffer cheio
             if con is cons:
                 print("ta cheio \n")
+                
                 msgSend = lugares[out % 10]
                 lugares[out % 10] = 0
                 cons.send(msgSend.encode())
                 out += 1
                 contador -= 1
+            else:
+                prod.send("buffer cheio".encode())
 
     vezes += 1
 
